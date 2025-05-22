@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summer Camp Chatbot</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Header section with title and description -->
+        <header>
+            <h1>Summer Camp Chatbot</h1>
+            <p>Ask me about our summer camp activities, location, costs, and more!</p>
+        </header>
+        
+        <!-- This is where chat messages will appear -->
+        <div class="chat-box" id="chat-box">
+            <!-- Initial welcome message from the bot -->
+            <div class="message bot">
+                <p>Hello! I'm the Summer Camp Assistant. How can I help you today?</p>
+            </div>
+        </div>
+        
+        <!-- User input section with text box and send button -->
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type your question here...">
+            <button id="send-btn">Send</button>
+        </div>
+        
+        <!-- Quick suggestion buttons for common questions -->
+        <div class="suggestions">
+            <p>Try asking:</p>
+            <button class="suggestion-btn">What activities are available</button>
+            <button class="suggestion-btn">Where is the camp located</button>
+            <button class="suggestion-btn">How much does it cost</button>
+            <button class="suggestion-btn">How long is the camp</button>
+            <button class="suggestion-btn">How do I register</button>
+            <button class="suggestion-btn">What about safety measures</button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
