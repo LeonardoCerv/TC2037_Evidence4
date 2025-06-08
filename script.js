@@ -1,255 +1,151 @@
-    // Summer Camp Chatbot logic using finite state automaton
-    // Implements state machine to track conversation context
+// Summer Camp Chatbot -  Automaton
+// Transitions for each state
+const transitions = {
+    a: { 0: 'b', 1: 'c', 2: 'd' },
+    b: { 0: 'f', 1: 'i', 2: 'a' },
+    c: { 0: 'a' },
+    d: { 0: 'a' },
+    f: { 0: 'g', 1: 'h', 2: 'b' },
+    g: { 0: 'a' },
+    h: { 0: 'a' },
+    i: { 0: 'j', 1: 'k', 2: 'b' },
+    j: { 0: 'a' },
+    k: { 0: 'a' }
+};
 
-    // Define automaton starting state
-    const startState = 'a';
-    let currentState = startState;
-
-    // Define transitions between states based on input types
-    const transitions = {
-        a: { 0: 'b', 1: 'c', 2: 'd', _: 'l' },
-        b: { 0: 'f', 1: 'i', 2: 'a', _: 'l' },
-        c: { 0: 'a', _: 'l' },
-        d: { 0: 'a', _: 'l' },
-        f: { 0: 'g', 1: 'h', 2: 'b', _: 'l' },
-        g: { 0: 'a', _: 'l' },
-        h: { 0: 'a', _: 'l' },
-        i: { 0: 'j', 1: 'k', 2: 'b', _: 'l' },
-        j: { 0: 'a', _: 'l' },
-        k: { 0: 'a', _: 'l' },
-        l: { 0: 'a', _: 'l' }
-    };
-
-    // Define phrases mapped to transition numbers for input classification
-    const phraseToNumber = {
-        // Activities section - maps to input type 0
-        "activities": 0,
-        "what activities are available": 0,
-        "activities available": 0,
-        "things to do": 0,
-        "what can we do": 0,
-        "camp activities": 0,
-        
-        // Location section - maps to input type 0
-        "location": 0,
-        "where is the camp located": 0,
-        "camp location": 0,
-        "where is it": 0,
-        "address": 0,
-        
-        // Cost section - maps to input type 1
-        "cost": 1,
-        "how much does it cost": 1,
-        "price": 1,
-        "fees": 1,
-        "how much": 1,
-        "payment": 1,
-        
-        // Duration section - maps to input type 1
-        "duration": 1,
-        "how long is the camp": 1,
-        "length": 1,
-        "days": 1,
-        "how long": 1,
-        
-        // Registration section - maps to input type 2
-        "registration": 2,
-        "how do i register": 2,
-        "sign up": 2,
-        "enroll": 2,
-        "apply": 2,
-        
-        // Safety section - maps to input type 0
-        "safety": 0,
-        "what about safety measures": 0,
-        "security": 0,
-        "safe": 0,
-        "emergency": 0,
-        
-        // Age range section - maps to input type 1
-        "age": 1,
-        "what is the age range": 1,
-        "how old": 1,
-        "age requirement": 1,
-        "age limit": 1,
-        
-        // Meals section - maps to input type 1
-        "meals": 1,
-        "what about meals": 1,
-        "food": 1,
-        "eat": 1,
-        "dining": 1,
-        
-        // Accommodation section - maps to input type 1
-        "accommodation": 1,
-        "what is the accommodation like": 1,
-        "sleeping": 1,
-        "cabins": 1,
-        "lodging": 1,
-        "where do we sleep": 1
-    };
-
-    // response functions for different topics
+// Keywords for each state and options
+const phrases = {
+    a: { // Start
+        0: ["activities", "do", "fun"],
+        1: ["cost", "price", "fee", "pay", "money"],
+        2: ["register", "sign", "join", "enroll", "apply"]
+    },
     
-    // camp activities
-    function getInfoActivities() {
-        return "Our summer camp offers a variety of exciting activities including: hiking, swimming, archery, crafts, canoeing, and rock climbing.";
+    b: { // Activities
+        0: ["location", "where", "place", "address"],
+        1: ["details", "duration", "long", "days", "time", "week"],
+        2: ["back", "menu", "return", "home", "main"]
+    },
+    
+    c: { // Costs
+        0: ["back", "menu", "return", "home", "main"]
+    },
+    
+    d: { // Registration
+        0: ["back", "menu", "return", "home", "main"]
+    },
+    
+    f: { // Location
+        0: ["safety", "safe", "secure", "emergency"],
+        1: ["maps", "map", "view", "layout"],
+        2: ["back", "activities", "return"]
+    },
+    
+    g: { // Safety
+        0: ["back", "menu", "return", "home", "main"]
+    },
+
+    h: { // Maps
+        0: ["back", "menu", "return", "home", "main"]
+    },
+    
+    i: { // Details
+        0: ["age", "old", "kids", "years", "requirements"],
+        1: ["meals", "food", "eat", "dining"],
+        2: ["back", "activities", "return"]
+    },
+    
+    j: { // Age
+        0: ["back", "menu", "return", "home", "main"]
+    },
+    
+    k: { // Meals
+        0: ["back", "menu", "return", "home", "main"]
+    },
+};
+
+// Responses for each state
+const responses = {
+    a: "Welcome! I can help you with information about activities, cost, or registration. What would you like to know?",
+    b: "Our summer camp offers exciting activities including: hiking, swimming, archery, crafts, canoeing, and rock climbing. Ask about our location, details, or type back to return to the main menu.",
+    c: "The cost is 3500 MXN for 1 week, including all activities, accommodation, and meals. Type back to return to the main menu.",
+    d: "To register, complete the online form on our website. The process is simple and takes just a few minutes. Type back to return to the main menu.",
+    f: "The camp is located at Sierra Verde Camp, Querétaro, Mexico. Beautiful natural environment surrounded by mountains and forests. Ask about safety, maps, or type back to return to activities.",
+    g: "We prioritize safety. All instructors are certified and we have emergency medical staff onsite at all times. Type back to return to the main menu.",
+    h: "You can view a detailed map of the campgrounds on our website. The map shows all activity areas, cabins, dining hall, medical center, and emergency exits. Type back to return to the main menu.",
+    i: "Our camp runs for 1 week (Monday to Sunday). We have multiple sessions throughout summer. Ask about age requirements, meals, or type back to return to activities.",
+    j: "Our summer camp is designed for children and teens aged 8 to 16 years old. Type back to return to the main menu.",
+    k: "We provide three nutritious meals per day, including breakfast, lunch, and dinner. Special dietary needs such as vegetarian and allergies are accommodated. Type back to return to the main menu."
+};
+
+// Process user input and return response
+function processInput(input) {
+    console.log("Current state:", state, "| Input:", input);
+
+    const inputNumber = findInputNumber(input, state);
+    
+    // If theres no valid input, show valid options
+    if (inputNumber === "_") {
+        let options = [];
+        // Group options from the current state
+        if (phrases[state][0]) options.push(phrases[state][0][0]);
+        if (phrases[state][1]) options.push(phrases[state][1][0]);
+        if (phrases[state][2]) options.push(phrases[state][2][0]);
+        return "I can't understand that. Try: " + options.join(", ");
     }
 
-    // camp location
-    function getInfoLocation() {
-        return "The camp is located at Sierra Verde Camp, Querétaro, Mexico. It's set in a beautiful natural environment surrounded by mountains and forests.";
-    }
+    // If input is valid, go to next state
+    state = transitions[state][inputNumber];
+    return responses[state];
+}
 
-    // camp costs
-    function getInfoCost() {
-        return "The cost of attending our summer camp is 3500 MXN for 1 week. This includes all activities, accommodation, and meals.";
-    }
-
-    // camp duration
-    function getInfoDuration() {
-        return "Our camp runs for 1 week (Monday to Sunday). We have multiple sessions throughout the summer season.";
-    }
-
-    // registration process
-    function getInfoRegistration() {
-        return "To register for our summer camp, you can complete the online registration form on our website. The process is simple and only takes a few minutes.";
-    }
-
-    // safety measures
-    function getInfoSafety() {
-        return "We prioritize the safety of all campers. All our instructors are certified in their respective activities, and we have emergency medical staff onsite at all times.";
-    }
-
-    // age requirements
-    function getInfoAge() {
-        return "Our summer camp is designed for children and teens aged 8 to 16 years old.";
-    }
-
-    // meal options
-    function getInfoMeals() {
-        return "We provide three nutritious meals per day, with options for different dietary needs including vegetarian choices.";
-    }
-
-    // sleeping arrangements
-    function getInfoAccommodation() {
-        return "Campers stay in comfortable cabin-style accommodations with 6-8 campers per cabin, supervised by our trained staff.";
-    }
-
-    // unrecognized input
-    function getDefaultResponse() {
-        return "I'm sorry, I didn't understand that. Please ask another question about our summer camp.";
-    }
-
-    // Main query processing function using state machine logic
-    function processQuery(input) {
-        // Normalize input by removing punctuation and converting to lowercase
-        const normalizedInput = input.toLowerCase().replace(/[.,?!:;]/g, '');
-        console.log("Normalized input:", normalizedInput);
-
-        // Classify input type based on phrase matching
-        let transitionNumber = '_'; // Default for unrecognized input
-        for (const [phrase, number] of Object.entries(phraseToNumber)) {
-            if (normalizedInput.includes(phrase)) {
-                transitionNumber = number;
-                break;
+// Find which input number matches the user's text
+function findInputNumber(text, state) {
+    for (let i= 0; i <= 2; i++) {
+        if (phrases[state][i]) {
+            for (const phrase of phrases[state][i]) {
+                if (text.includes(phrase)) {
+                    return i;
+                }
             }
         }
-        console.log("Transition number:", transitionNumber);
-
-        // Perform state transition based on current state and input type
-        const nextState = transitions[currentState][transitionNumber] || transitions[currentState]['_'];
-        console.log("State transition:", currentState, "->", nextState);
-        
-        // Update current state
-        currentState = nextState;
-
-        // Generate response based on keyword matching
-        let response;
-        if (normalizedInput.includes("activities")) {
-            response = getInfoActivities();
-        } else if (normalizedInput.includes("location") || normalizedInput.includes("where")) {
-            response = getInfoLocation();
-        } else if (normalizedInput.includes("cost") || normalizedInput.includes("price") || normalizedInput.includes("how much")) {
-            response = getInfoCost();
-        } else if (normalizedInput.includes("duration") || normalizedInput.includes("how long")) {
-            response = getInfoDuration();
-        } else if (normalizedInput.includes("register") || normalizedInput.includes("sign up")) {
-            response = getInfoRegistration();
-        } else if (normalizedInput.includes("safety")) {
-            response = getInfoSafety();
-        } else if (normalizedInput.includes("age")) {
-            response = getInfoAge();
-        } else if (normalizedInput.includes("meal") || normalizedInput.includes("food")) {
-            response = getInfoMeals();
-        } else if (normalizedInput.includes("accommodation") || normalizedInput.includes("cabin") || normalizedInput.includes("sleep")) {
-            response = getInfoAccommodation();
-        } else {
-            response = getDefaultResponse();
-        }
-
-        return response;
     }
+    // If no match found, return error
+    return '_';
+}
 
-    const chatBox = document.getElementById('chat-box');
-    const userInput = document.getElementById('user-input');
-    const sendBtn = document.getElementById('send-btn');
-    const suggestionBtns = document.querySelectorAll('.suggestion-btn');
+// DOM elements
+const chatBox = document.getElementById('chat-box');
+const userInput = document.getElementById('user-input');
+const sendBtn = document.getElementById('send-btn');
 
-    // Add message to chat display with appropriate styling
-    function addMessage(text, isUser = false) {
-        // Create message container element
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
-        
-        const messagePara = document.createElement('p');
-        messagePara.textContent = text;
-        
-        // Append message to chat and scroll to bottom
-        messageDiv.appendChild(messagePara);
-        chatBox.appendChild(messageDiv);
-        
-        // Auto-scroll to show latest message
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
+// Type message in chat
+function addMessage(text, isUser = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+    messageDiv.innerHTML = `<p>${text}</p>`;
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
 
-    // Handle user input processing and response generation
-    function handleUserInput(input) {
-        // Validate input is not empty
-        if (input.trim() === '') return;
-        
-        // Display user message in chat
-        addMessage(input, true);
-        console.log("Processing input:", input);
-        
-        // Clear input field
-        userInput.value = '';
-        
-        // Process input and generate bot response
-        const response = processQuery(input);
-        console.log("Bot response:", response);
-        
-        // Display bot response in chat
-        addMessage(response);
-    }
+// Handle user input
+function handleUserInput() {
+    // Check for empty input
+    if (!userInput.value.trim()) return;
+    addMessage(userInput.value, true);
 
-    // Event listeners for user interactions
-    
-    // Send button click handler
-    sendBtn.addEventListener('click', () => {
-        handleUserInput(userInput.value);
-    });
+    // Process input and add bot response
+    const input = userInput.value.trim().toLowerCase();
+    addMessage(processInput(input));
+    userInput.value = '';
+}
 
-    // Enter key press handler for input field
-    userInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            handleUserInput(userInput.value);
-        }
-    });
+// Event listeners
+sendBtn.addEventListener('click', handleUserInput);
+userInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleUserInput();
+});
 
-    // Suggestion button click handlers
-    suggestionBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            handleUserInput(btn.textContent);
-        });
-    });
+// Initialization
+let state = 'a';
+addMessage(responses['a']);

@@ -1,243 +1,165 @@
-% This file contains the Prolog representation of the chatbot logic.
-% While not directly used in the web application, it serves as documentation
-% of the state machine and logic implemented in JavaScript.
+% Summer Camp Chatbot State Machine in Prolog
+% This file serves as documentation of a prolog version of the automata.
+% It defines states, transitions, and responses used in the chatbot.
 
-% List of activities available at the camp
-activity(hiking).
-activity(swimming).
-activity(archery).
-activity(crafts).
-activity(canoeing).
-activity(rockclimbing).
+% Define state transitions.
+% Format: transition(CurrentState, NextState, InputNumber)
+% Input numbers: 0, 1, 2 (corresponding to options shown at each state)
+transition(a, b, 0). % Start -> Activities
+transition(a, c, 1). % Start -> Costs
+transition(a, d, 2). % Start -> Registration
+transition(a, l, _). % Error
 
-% Key information about the camp stored as facts
-location("sierra verde camp queretaro").
-cost("3500 mxn for 1 week").
-duration("1 week monday to sunday").
-registration("online through our website").
-safety("all instructors are certified emergency medical staff is onsite").
-age_range("8 to 16 years old").
-meals("three nutritious meals per day including vegetarian options").
-accommodation("cabin style with 6 to 8 campers per cabin").
+transition(b, f, 0). % Activities -> Location
+transition(b, i, 1). % Activities -> Details
+transition(b, a, 2). % Activities -> Start
+transition(b, l, _). % Error
 
-% These rules match questions directly to answers
-response("what activities are available", "hiking, swimming, archery, crafts, canoeing, rockclimbing").
-response("where is the camp located", L) :- location(L).
-response("how much does it cost", C) :- cost(C).
-response("how long is the camp", D) :- duration(D).
-response("how do i register", R) :- registration(R).
-response("what about safety measures", S) :- safety(S).
-response("what is the age range", A) :- age_range(A).
-response("what about meals", M) :- meals(M).
-response("what is the accommodation like", A) :- accommodation(A).
-response(_, "I'm sorry, I didn't understand that. Please ask another question about our summer camp.").
+transition(c, a, 0). % Costs -> Start
+transition(c, l, _). % Error
 
-% Define initial state.
-start_state(a).
+transition(d, a, 0). % Registration -> Start 
+transition(d, l, _). % Error
 
-% Define transitions.
-% Format: transition(CurrentState, NextState, InputType)
-transition(a, b, 0). % From start state to activities
-transition(a, c, 1). % From start state to costs
-transition(a, d, 2). % From start state to registration
-transition(a, e, 3). % From start state to exit
-transition(a, l, _). % Default: go to unknown state
+transition(f, g, 0). % Location -> Safety
+transition(f, h, 1). % Location -> Maps
+transition(f, b, 2). % Location -> Activities
+transition(f, l, _). % Error
 
-transition(b, f, 0). % From activities to location
-transition(b, i, 1). % From activities to details
-transition(b, a, 2). % From activities back to start (main menu)
-transition(b, e, 3). % From activities to exit
-transition(b, l, _). % Default: go to unknown state
+transition(g, a, 0). % Safety -> Start
+transition(g, l, _). % Error
 
-transition(c, a, 0). % From costs back to start
-transition(c, e, 1). % From costs to exit
-transition(c, l, _). % Default: go to unknown state
+transition(h, a, 0). % Maps -> Start
+transition(h, l, _). % Error
 
-transition(d, a, 0). % From registration back to start
-transition(d, e, 1). % From registration to exit
-transition(d, l, _). % Default: go to unknown state
+transition(i, j, 0). % Details -> Age
+transition(i, k, 1). % Details -> Meals
+transition(i, b, 2). % Details -> Activities
+transition(i, l, _). % Error
 
-transition(f, g, 0). % From location to safety
-transition(f, h, 1). % From location to maps
-transition(f, b, 2). % From location back to activities
-transition(f, e, 3). % From location to exit
-transition(f, l, _). % Default: go to unknown state
+transition(j, a, 0). % Age -> Start
+transition(j, l, _). % Error
 
-transition(g, a, 0). % From safety back to start
-transition(g, e, 1). % From safety to exit
-transition(g, l, _). % Default: go to unknown state
+transition(k, a, 0). % Meals -> Start
+transition(k, l, _). % Error
 
-transition(h, a, 0). % From maps back to start
-transition(h, e, 1). % From maps to exit
-transition(h, l, _). % Default: go to unknown state
+transition(l, a, 0). % Error -> Start
+transition(l, l, _). % Error -> Stay in error
 
-transition(i, j, 0). % From details to age
-transition(i, k, 1). % From details to meals
-transition(i, b, 2). % From details back to activities
-transition(i, e, 3). % From details to exit
-transition(i, l, _). % Default: go to unknown state
+% Define responses for each transition.
+% Format: menu(CurrentState, menu[response,options])
+% available options: 0, 1, 2
+menu(a, [ % Start
+    "Welcome! I can help you with information about activities, cost, or registration.",
+    "",
+    "  What would you like to know?",
+    "  - (0) Activities",  % Start -> Activities
+    "  - (1) Cost",        % Start -> Costs
+    "  - (2) Registration" % Start -> Registration
+]).
 
-transition(j, a, 0). % From age back to start
-transition(j, e, 1). % From age to exit
-transition(j, l, _). % Default: go to unknown state
+menu(b, [ % Activities
+    "Our summer camp offers exciting activities including: hiking, swimming, archery, crafts, canoeing, and rock climbing.",
+    "",
+    "  What would you like to know?",
+    "  - (0) Location",         % Activities -> Location
+    "  - (1) Details",          % Activities -> Details
+    "  - (2) Back to main menu" % Activities -> Start
+]).
 
-transition(k, a, 0). % From meals back to start
-transition(k, e, 1). % From meals to exit
-transition(k, l, _). % Default: go to unknown state
+menu(c, [ % Costs
+    "The cost is 3500 MXN for 1 week, including all activities, accommodation, and meals.",
+    "",
+    "  What would you like to know?",
+    "  - (0) Back to main menu"  % Costs -> Start
+]).
 
-transition(l, a, 0). % From unknown back to start
-transition(l, l, _). % Stay in unknown state if input not recognized
+menu(d, [ % Registration
+    "To register, complete the online form on our website. The process is simple and takes just a few minutes.",
+    "",
+    "  What would you like to know?",
+    "  - (0) Back to main menu"  % Registration -> Start
+]).
 
-% Define menus
-print_main_menu :-
-    write('SUMMER CAMP INFORMATION SYSTEM'), nl,
-    write('(0) Camp Activities'), nl,
-    write('(1) Camp Costs'), nl,
-    write('(2) Registration Information'), nl,
-    write('(3) Exit'), nl.
+menu(f, [ % Location
+    "The camp is located at Sierra Verde Camp, Querétaro, Mexico. Beautiful natural environment surrounded by mountains and forests.",
+    "",
+    "  What would you like to know?",
+    "  - (0) Safety",            % Location -> Safety
+    "  - (1) Maps",              % Location -> Maps
+    "  - (2) Back to activities" % Location -> Activities
+]).
 
-print_activities_menu :-
-    write('ACTIVITIES INFORMATION'), nl,
-    write('(0) Camp Location'), nl,
-    write('(1) Camp Details'), nl,
-    write('(2) Return to Main Menu'), nl,
-    write('(3) Exit'), nl.
+menu(g, [ % Safety
+    "We prioritize safety. All instructors are certified and we have emergency medical staff onsite at all times.",
+    "",
+    "  What would you like to know?",
+    "  - (0) Back to main menu" % Safety -> Start
+]).
 
-print_location_menu :-
-    write('LOCATION INFORMATION'), nl,
-    write('(0) Safety Measures'), nl,
-    write('(1) Camp Maps'), nl,
-    write('(2) Return to Activities'), nl,
-    write('(3) Exit'), nl.
+menu(h, [ % Maps
+    "You can view a detailed map of the campgrounds on our website. The map shows all activity areas, cabins, dining hall, medical center, and emergency exits.",
+    "",
+    "  What would you like to know?",
+    "  - (0) Back to main menu" % Maps -> Start
+]).
 
-print_details_menu :-
-    write('CAMP DETAILS'), nl,
-    write('(0) Age Range Information'), nl,
-    write('(1) Meals Information'), nl,
-    write('(2) Return to Activities'), nl,
-    write('(3) Exit'), nl.
+menu(i, [ % Details
+    "Our camp runs for 1 week (Monday to Sunday). We have multiple sessions throughout summer.",
+    "",
+    "  - What would you like to know?",
+    "  - (0) Age requirements",  % Details -> Age
+    "  - (1) Meals",             % Details -> Meals
+    "  - (2) Back to activities" % Details -> Activities
+]).
 
-print_final_menu :-
-    write('(0) Return to Main Menu'), nl,
-    write('(1) Exit'), nl.
+menu(j, [ % Age
+    "Our summer camp is designed for children and teens aged 8 to 16 years old.",
+    "",
+    "  What would you like to know?",
+    "  - (0) Back to main menu" % Age -> Start
+]).
 
-% Start the program
-start :-
-    start_state(InitialState),
-    print_main_menu,
-    process_state(InitialState).
+menu(k, [ % Meals
+    "We provide three nutritious meals per day, including breakfast, lunch, and dinner. Special dietary needs such as vegetarian and allergies are accommodated.",
+    "",
+    "  What would you like to know?",
+    "  - (0) Back to main menu" % Meals -> Start
+]).
 
-% Get the next state based on the current state and input
-get_next_state(CurrentState, Input, NextState) :-
-    ( transition(CurrentState, NextState, Input) ->
-        true
-    ),
-    (is_exit_state(NextState),
-    is_activities_state(NextState),
-    is_location_state(NextState),
-    is_safety_state(NextState),
-    is_maps_state(NextState),
-    is_details_state(NextState),
-    is_age_state(NextState),
-    is_meals_state(NextState),
-    is_costs_state(NextState),
-    is_registration_state(NextState),
-    is_invalid_state(NextState)).
+menu(l, [ % Error state
+    "I didnt understand that. Please ask about activities, cost, or registration.",
+    "",
+    "  What would you like to know?",
+    "  - (0) Back to main menu" % Error -> Start
+]).
 
-% Check if the state is an exit state
-is_exit_state(e) :-
-    write('Thank you for using our Summer Camp Information System. Goodbye!'), nl,
-    halt. % Exit the program
 
-% Ignore states other than 'e'
-is_exit_state(_).
+% Main function to run the chatbot
+run_chatbot :-
+    write('Welcome to the Summer Camp Chatbot!'), nl,nl,
+    write('For each input enter a number (needs to be terminated by a period)'), nl, nl,
+    % Initial state 'a'
+    chatbot_loop(a).
 
-% Check if the state is activities
-is_activities_state(b) :-
-    write('Our camp offers a variety of exciting activities including: hiking, swimming, archery, crafts, canoeing, and rock climbing.'), nl,
-    print_activities_menu.
+% Chatbot loop
+chatbot_loop(CurrentState) :-
+    %print the current state menu
+    write('Current state: '), write(CurrentState), nl,
+    write('----------------------------'), nl,
+    menu(CurrentState, Menu),
+    print_menu(Menu),
+    %get input and move to next state
+    write('> '),
+    read(Input),nl,nl,
+    transition(CurrentState, NextState, Input),
+    chatbot_loop(NextState).
 
-% Ignore states other than 'b'
-is_activities_state(_).
+% Print a menu
+print_menu([]) :- nl.
+print_menu([H|T]) :-
+    write(H), nl,
+    print_menu(T).
 
-% Check if the state is location
-is_location_state(f) :-
-    write('The camp is located at Sierra Verde Camp, Querétaro, Mexico. It\'s set in a beautiful natural environment surrounded by mountains and forests.'), nl,
-    print_location_menu.
-
-% Ignore states other than 'f'
-is_location_state(_).
-
-% Check if the state is safety
-is_safety_state(g) :-
-    write('We prioritize the safety of all campers. All our instructors are certified in their respective activities, and we have emergency medical staff onsite at all times.'), nl,
-    print_final_menu.
-
-% Ignore states other than 'g'
-is_safety_state(_).
-
-% Check if the state is maps
-is_maps_state(h) :-
-    write('You can find detailed maps of our camp on our website. The camp includes activity areas, cabins, dining hall, medical facility, and administration building.'), nl,
-    print_final_menu.
-
-% Ignore states other than 'h'
-is_maps_state(_).
-
-% Check if the state is details
-is_details_state(i) :-
-    write('Our summer camp provides a comprehensive experience with comfortable accommodations, nutritious meals, and certified instructors.'), nl,
-    print_details_menu.
-
-% Ignore states other than 'i'
-is_details_state(_).
-
-% Check if the state is age
-is_age_state(j) :-
-    write('Our summer camp is designed for children and teens aged 8 to 16 years old.'), nl,
-    print_final_menu.
-
-% Ignore states other than 'j'
-is_age_state(_).
-
-% Check if the state is meals
-is_meals_state(k) :-
-    write('We provide three nutritious meals per day, with options for different dietary needs including vegetarian choices.'), nl,
-    print_final_menu.
-
-% Ignore states other than 'k'
-is_meals_state(_).
-
-% Check if the state is costs
-is_costs_state(c) :-
-    write('The cost of attending our summer camp is 3500 MXN for 1 week. This includes all activities, accommodation, and meals.'), nl,
-    print_final_menu.
-
-% Ignore states other than 'c'
-is_costs_state(_).
-
-% Check if the state is registration
-is_registration_state(d) :-
-    write('To register for our summer camp, you can complete the online registration form on our website. The process is simple and only takes a few minutes.'), nl,
-    print_final_menu.
-
-% Ignore states other than 'd'
-is_registration_state(_).
-
-% Check if the state is invalid
-is_invalid_state(l) :-
-    write('Sorry, I cannot answer that question. Please try a different option.'), nl,
-    print_main_menu.
-
-% Ignore states other than 'l'
-is_invalid_state(_).
-
-% Process the current state
-process_state(CurrentState) :-
-    read(Input),
-    ( get_next_state(CurrentState, Input, NextState) ->
-        process_state(NextState)
-    ).
-
-% Example starting point
-:- start.
+% Start the chatbot
+:- run_chatbot.
