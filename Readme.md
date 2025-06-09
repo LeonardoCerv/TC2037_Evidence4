@@ -12,7 +12,7 @@ Logic Programming ensures maintainable knowledge representation, and its inferen
 
 ## Models
 
-To build the chatbot's conversation management system, I used Automata Theory with finite state transitions. This model uses states and transitions, processing user queries through input classification and state navigation to derive responses. The system handles known and unknown inputs, using default transitions for unexpected queries.
+To build the chatbot's conversation management system, I used Automata Theory with finite state transitions. This model uses states and transitions, processing user queries through input classification and state navigation to derive responses. The system handles known and unknown inputs, using default transitions for unexpected queries (Hopcroft et al., 2006).
 
 The Automata Theory model includes:
 
@@ -46,18 +46,15 @@ This resulted in the automaton model, integrating state management and input cla
 
 ## Implementation
 
-To develop the chatbot and implement its logic using Automata Theory, finite state transitions were combined with web technologies for user interaction.
+To develop the chatbot and implement its logic using Automata Theory, finite state transitions were implemented into a web app. The first step was building the state machine using Automata Theory principles, with states and transitions in a structured format that mirrors finite state machine design.
 
-The first step was building the state machine using Automata Theory principles, with states and transitions in a structured format that mirrors finite state machine design. This approach separates conversation flow and input handling, making the system maintainable and extensible.
-
-HTML provides the application structure, including elements for user interaction. CSS is used for visual presentation and user experience. The layout simulates a summer camp information website.
+In my project, HTML provides the application structure, including elements for user interaction. CSS is used for visual presentation and user experience. The layout simulates a very simple summer camp information website.
 
 Automata Theory was implemented using JavaScript to simulate finite state transitions. The system maintains states and transitions, processing user inputs to navigate states and generate responses. The following snippet demonstrates the state machine implementation:
 
 ```javascript
-// State machine setup - defines conversation states
-const startState = 'a';
-let currentState = startState;
+// Initializaiton, a is our initial state
+let state = 'a';
 
 // Transition table defining state changes based on input types
 const transitions = {
@@ -66,53 +63,68 @@ const transitions = {
     c: { 0: 'a', _: 'l' },                   // Cost state
     d: { 0: 'a', _: 'l' },                   // Registration state
     f: { 0: 'g', 1: 'h', 2: 'b', _: 'l' },  // Location state
-    // ... additional states for detailed navigation
+    // ... remaining states
     l: { 0: 'a', _: 'l' }                    // Unknown/default state
 };
 
-// Input classification - maps phrases to transition numbers
-const phraseToNumber = {
-    "activities": 0,
-    "location": 0, 
-    "cost": 1,
-    "duration": 1,
-    "registration": 2,
-    "safety": 0,
-    "age": 1,
-    "meals": 1,
-    "accommodation": 1
+// Response pool for all valid states
+const responses = {
+    a: "Welcome! I can help you with information about activities, cost, or registration. What would you like to know?",
+    b: "Our summer camp offers exciting activities including: hiking, swimming, archery, crafts, canoeing, and rock climbing. Ask about our location, details, or type back to return to the main menu.",
+    c: "The cost is 3500 MXN for 1 week, including all activities, accommodation, and meals. Type back to return to the main menu.",
+    d: "To register, complete the online form on our website. The process is simple and takes just a few minutes. Type back to return to the main menu.",
+    f: "The camp is located at Sierra Verde Camp, Querétaro, Mexico. Beautiful natural environment surrounded by mountains and forests. Ask about safety, maps, or type back to return to activities.",
+    g: "We prioritize safety. All instructors are certified and we have emergency medical staff onsite at all times. Type back to return to the main menu.",
+    h: "You can view a detailed map of the campgrounds on our website. The map shows all activity areas, cabins, dining hall, medical center, and emergency exits. Type back to return to the main menu.",
+    i: "Our camp runs for 1 week (Monday to Sunday). We have multiple sessions throughout summer. Ask about age requirements, meals, or type back to return to activities.",
+    j: "Our summer camp is designed for children and teens aged 8 to 16 years old. Type back to return to the main menu.",
+    k: "We provide three nutritious meals per day, including breakfast, lunch, and dinner. Special dietary needs such as vegetarian and allergies are accommodated. Type back to return to the main menu."
 };
 
+// Input classification - maps phrases to transition numbers specifically for each state
+const phrases = {
+    a: { // Start
+        0: ["activities", "do", "fun"],
+        1: ["cost", "price", "fee", "pay", "money"],
+        2: ["register", "sign", "join", "enroll", "apply"]
+    },
+    
+    b: { // Activities
+        0: ["location", "where", "place", "address"],
+        1: ["details", "duration", "long", "days", "time", "week"],
+        2: ["back", "menu", "return", "home", "main"]
+    },
+    
+    c: { // Costs
+        0: ["back", "menu", "return", "home", "main"]
+    },
+    // ... remaining states
+};
+
+
 // Main processing function
-function processQuery(input) {
-    const normalizedInput = input.toLowerCase().replace(/[.,?!:;]/g, '');
+function processInput(input) {
+    console.log("Current state:", state, "| Input:", input);
+
+    const inputNumber = findInputNumber(input, state);
     
-    // Determine input type for state transition
-    let transitionNumber = '_';
-    for (const [phrase, number] of Object.entries(phraseToNumber)) {
-        if (normalizedInput.includes(phrase)) {
-            transitionNumber = number;
-            break;
-        }
+    // If theres no valid input, show valid options
+    if (inputNumber === "_") {
+        let options = [];
+        // Group options from the current state
+        if (phrases[state][0]) options.push(phrases[state][0][0]);
+        if (phrases[state][1]) options.push(phrases[state][1][0]);
+        if (phrases[state][2]) options.push(phrases[state][2][0]);
+        return "I can't understand that. Try: " + options.join(", ");
     }
-    
-    // Execute state transition
-    const nextState = transitions[currentState][transitionNumber] || transitions[currentState]['_'];
-    currentState = nextState;
-    
-    // Generate response based on input keywords
-    if (normalizedInput.includes("activities")) {
-        return "Our summer camp offers a variety of exciting activities including: hiking, swimming, archery, crafts, canoeing, and rock climbing.";
-    } else if (normalizedInput.includes("location") || normalizedInput.includes("where")) {
-        return "The camp is located at Sierra Verde Camp, Querétaro, Mexico. It's set in a beautiful natural environment surrounded by mountains and forests.";
-    }
-    // ... additional response logic
+
+    // If input is valid, go to next state
+    state = transitions[state][inputNumber];
+    return responses[state];
 }
 ```
 
 This implementation demonstrates Automata Theory concepts: state management, transition rules, and input classification. The system uses state navigation for responses based on user inputs, not predetermined paths.
-
-Integrating Automata Theory with web technologies allows for effective conversation management and an accessible UI, making the system theoretically sound and practical.
 
 ## Tests
 
@@ -124,44 +136,44 @@ The following test suite validates the Automata Theory implementation and UI:
 
 #### 1. State Machine Verification Tests
 
-**Test SM-01: State Transition**
-- Input: Query about activities
+**Q-01: State Transition**
+- Input: What can i do?
 - Expected: Transition from start state to activities state
-- Result: ✅ PASSED
+- Result: ✅ True
 
-**Test SM-02: Location Information Retrieval**
+**Q-02: Location Information Retrieval**
 - Input: "Where is the camp located?"
 - Expected: Transition from start state to location state
-- Result: ✅ PASSED
+- Result: ✅ True
 
-**Test SM-03: Default State Handling**
+**Q-03: Default State Handling**
 - Input: Unknown query
 - Expected: Transition to default state
-- Result: ✅ PASSED
+- Result: ✅ True
 
 #### 2. Input Classification Tests
 
-**Test IC-01: Pattern Matching Accuracy**
+**I-01: Pattern Matching Accuracy**
 - Input: Various phrasings of the same question
 - Expected: Consistent input classification regardless of phrasing
-- Result: ✅ PASSED
+- Result: ✅ True
 
-**Test IC-02: Unknown Input Handling**
+**I-02: Unknown Input Handling**
 - Input: Questions outside the classification map
 - Expected: Appropriate default response suggesting valid queries
-- Result: ✅ PASSED
+- Result: ✅ True
 
 #### 3. User Interface Integration Tests
 
-**Test UI-01: Query Input Processing**
+**UI-01: Query Input Processing**
 - Input: Natural language questions through the interface
 - Expected: Seamless processing and appropriate responses
-- Result: ✅ PASSED
+- Result: ✅ True
 
-**Test UI-02: Conversation Flow Maintenance**
+**UI-02: Conversation Flow Maintenance**
 - Input: Multiple sequential queries
 - Expected: Maintained context and coherent conversation
-- Result: ✅ PASSED
+- Result: ✅ True
 
 Testing confirms the Automata Theory implementation correctly handles state management, input classification, and user interaction according to the paradigm's principles.
 
@@ -169,7 +181,7 @@ Testing confirms the Automata Theory implementation correctly handles state mana
 
 To determine the time complexity of the Automata Theory implementation, key operations and their computational characteristics are examined.
 
-### Core Operations Analysis
+### Main Functions Analysis
 
 **State Machine Operations:**
 - State Transition: O(1) using hash table lookup
@@ -183,53 +195,55 @@ The system processes user queries as follows:
 3. State transition: O(1)
 4. Response generation: O(1)
 
-Total Time Complexity: O(m), where m is query length.
+Total Time Complexity: O(m), where m is the length of the input query string.
 
 ### Paradigm Comparison and Tradeoffs
 
-#### 1. Logic Programming
+### Scripting Paradigm
 
-**Implementation Approach:**
-- Uses facts and rules for knowledge representation.
-- Uses logical inference for query resolution.
-- Uses pattern matching for input processing.
+This is like writing a basic flowchart, lots of "if this, then" statements to handle what users say (Devomech 2024).
 
-**Tradeoffs:**
-- Advantages: Natural knowledge representation, built-in inference.
-- Disadvantages: Requires explicit inference logic, less structured conversation flow.
+**How it could work:** The program checks what the user typed against a list of possible responses, one by one, until it finds a match.
 
-#### 2. Object-Oriented Programming
+**Speed:** Gets slower as you add more possible responses because it has to check each one.
 
-**Implementation Approach:**
-- Uses classes (e.g., ChatBot, KnowledgeBase).
-- Encapsulates behavior and data in objects.
-- Uses inheritance for query/response types.
+**Good parts:**
+- Easy to understand and write
+- Quick to build simple chatbots
 
-**Tradeoffs:**
-- Advantages: Code organization, reusability, encapsulation.
-- Disadvantages: More verbose, less natural knowledge representation, requires explicit inference logic.
+**Problems:**
+- Gets messy and slow when you add more
+- Hard to maintain once you have lots of conversation options
+- Slow because it checks every possibility in order
 
-#### 3. Functional Programming
+### Functional Paradigm
 
-**Implementation Approach:**
-- Uses pure functions for query processing.
-- Uses immutable data structures for knowledge.
-- Uses higher-order functions for pattern matching and responses.
+This treats functions as valid parameters to other functions, making it easy to implement nested functions and recursion, some creative aproaches could be implemented.
 
-**Tradeoffs:**
-- Advantages: Testability, predictable behavior, easier correctness reasoning.
-- Disadvantages: Less intuitive for knowledge representation, may need complex inference structures.
+**How it could work:** you could use the context and the query inside a function that is passed as an argument and then generates a response based on the parameters (Plaza 2023).
 
-#### 4. Procedural Programming
+**Speed:** It could be fast by implementation of maybe recursion, or hash maps if needed and suitable.
 
-**Implementation Approach:**
-- Uses sequential execution with conditional statements.
-- Uses arrays and hash tables for knowledge storage.
-- Uses nested if-else for query processing.
+**Good parts:**
+- Very predictable, same input always gives same output
+- Easy to test each part separately
 
-**Tradeoffs:**
-- Advantages: Simple, direct implementation, execution flow control.
-- Disadvantages: Becomes unwieldy with more knowledge, hard to maintain, no separation of concerns.
+**Problems:**
+- Can be confusing, harder to implement and understand
+- Can get complicated when tracking long conversations
+- Slower due to constantly creating new data
+
+#### Concurrent Paradigm
+
+Concurrent is useful for running multiple tasks at the same time;
+
+- Our chatbot talks to one person at a time, so there's nothing to run simultaneously. Also, conversations happen step by step, the bot can't answer question 3 before hearing question 2.
+
+#### Parallel Paradigm
+
+Similar to concurrent, parallel is useful for breaking tasks into smaller pieces and doing them simultaneously;
+
+- Our operations (checking user input, changing state) take very little time, the time to coordinate parallel work would probably be longer than just doing the work normally.
 
 ### Paradigm Selection Justification
 
@@ -244,18 +258,14 @@ Other paradigms would require more code and complex structures for state navigat
 
 ## Conclusion
 
-This project developed a chatbot application on a webpage to provide summer camp information. Using Automata Theory, the chatbot was structured for context-aware interactions through state navigation and input classification. While Automata Theory offered a suitable framework with maintainability and structured conversation management, other paradigms were considered.
+This project developed a chatbot application on a webpage to provide summer camp information. Using Automata Theory, the chatbot was structured for interactions with context through state navigation and input classification. While Automata Theory offered a suitable framework with maintainability and structured conversation management, other paradigms were also considered.
 
-Alternatives included Logic Programming, Object-Oriented Programming, and Functional Programming. Logic Programming offered natural knowledge representation but lacked structured conversation flow. Object-Oriented Programming offered code organization but required explicit inference logic. Functional Programming offered predictability but made conversation management less intuitive.
-
-Automata Theory was chosen because it provides a structured way to represent conversation flow as states and transitions, simplifying the design of a chatbot that navigates contexts. The predictable nature of Automata Theory simplifies maintenance and extension of the conversation flow, reducing complexity when adding states or transitions. State navigation handles query resolution, removing the need for explicit conversation path programming.
-
-Automata Theory allowed the creation of an efficient chatbot for providing summer camp information through natural language. Leveraging structured conversation management and input classification ensured user experience and maintainability.
+Alternative paradigms included Scripting, and Functional Programming. nevertheless, logic programming with Automata Theory was chosen because it provides a structured way to represent conversations as states and transitions, reducing complexity when adding states or transitions. This paradigm allowed the creation of an efficient chatbot for providing summer camp information through natural language.
 
 ## References
 
+
+- Devomech Editorial Team. (2024, October 11). A Beginner's Guide to State Machines in Embedded Systems. Devomech Solutions. https://devomech.com/state-machines-in-embedded-systems/
 - Hopcroft, J.E., Motwani, R., & Ullman, J.D. (2006). Introduction to Automata Theory, Languages, and Computation (3rd ed.). Pearson.
-- Sipser, M. (2012). Introduction to the Theory of Computation (3rd ed.). Cengage Learning.
-- Russell, S., & Norvig, P. (2020). Artificial Intelligence: A Modern Approach (4th ed.). Pearson.
-- Aho, A.V., & Ullman, J.D. (1992). Foundations of Computer Science (2nd ed.). W.H. Freeman.
-- Kozen, D.C. (1997). Automata and Computability. Springer.
+- Peri, V. (2018, October 7). Javascript State Machines — A Tutorial. Medium. https://medium.com/@venkatperi/javascript-state-machines-a-tutorial-972863e37825
+- Plaza, D. (2023, December 15). FSM - Functional State Machines. Tales from Dev. https://talesfrom.dev/blog/fsm-functional-state-machines
